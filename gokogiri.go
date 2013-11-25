@@ -1,8 +1,8 @@
 package gokogiri
 
 import (
-	"github.com/moovweb/gokogiri/html"
-	"github.com/moovweb/gokogiri/xml"
+	"github.com/burriko/gokogiri/html"
+	"github.com/burriko/gokogiri/xml"
 )
 
 func ParseHtml(content []byte) (doc *html.HtmlDocument, err error) {
