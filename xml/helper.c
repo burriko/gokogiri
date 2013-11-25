@@ -14,14 +14,14 @@ int close_callback(void * ctx) {
 }
 
 xmlDoc* newEmptyXmlDoc() {
-	return xmlNewDoc(BAD_CAST XML_DEFAULT_VERSION); 
+	return xmlNewDoc(BAD_CAST XML_DEFAULT_VERSION);
 }
 
 xmlElementType getNodeType(xmlNode *node) { return node->type; }
 
-void xmlFreeChars(char *buffer) { 
+void xmlFreeChars(char *buffer) {
 	if (buffer) {
-		xmlFree((xmlChar*)buffer); 
+		xmlFree((xmlChar*)buffer);
 	}
 }
 
@@ -44,7 +44,7 @@ xmlDoc* xmlParse(void *buffer, int buffer_len, void *url, void *encoding, int op
 	const char *c_url          = (char*)url;
 	const char *c_encoding     = (char*)encoding;
 	xmlDoc *doc = NULL;
-	
+
 	xmlResetLastError();
 	doc = xmlReadMemory(c_buffer, buffer_len, c_url, c_encoding, options);
 
@@ -77,7 +77,7 @@ xmlNode* xmlParseFragment(void *doc, void *buffer, int buffer_len, void *url, in
 		}
 		printf("errorcode %d\n", errCode);
 		return NULL;
-	} 
+	}
 	return root_element;
 }
 
@@ -124,7 +124,7 @@ int xmlUnlinkNodeWithCheck(xmlNode *node) {
 }
 
 int xmlNodePtrCheck(void *node) {
-	if (node == (void*)(-1)) 
+	if (node == (void*)(-1))
 		return 0;
 	return 1;
 }
@@ -132,7 +132,7 @@ int xmlNodePtrCheck(void *node) {
 int xmlSaveNode(void *wbuffer, void *node, void *encoding, int options) {
 	xmlSaveCtxtPtr savectx;
 	const char *c_encoding = (char*)encoding;
-	
+
 	savectx = xmlSaveToIO(
 	      (xmlOutputWriteCallback)xml_write_callback,
 	      (xmlOutputCloseCallback)close_callback,
@@ -142,54 +142,4 @@ int xmlSaveNode(void *wbuffer, void *node, void *encoding, int options) {
 	  );
 	xmlSaveTree(savectx, (xmlNode*)node);
 	return xmlSaveClose(savectx);
-}
-
-void removeNamespace(xmlNs **source, xmlNs *target) {
-    xmlNs *ns, *prevns = NULL;
-
-    for (ns = *source; ns; ns = ns->next) {
-        if (ns == target) {
-            if (!prevns) {
-                // we are the first element
-                *source = ns->next;
-            } else {
-                prevns->next = ns->next;
-            }
-
-            break;
-        }
-
-        prevns = ns;
-    }
-}
-
-void removeDefaultNamespace(xmlNs *ns, xmlNode *node) {
-    removeNamespace(&node->nsDef, ns);
-
-    xmlAttr *attr;
-
-    for (attr = node->properties; attr; attr = attr->next) {
-        if (!attr->ns)
-            continue;
-
-        removeNamespace(&attr->ns, ns);
-    }
-
-    if (node->ns == ns)
-        node->ns = NULL;
-
-    xmlNode *child;
-
-    for (child = xmlFirstElementChild(node); child; child = xmlNextElementSibling(child)) {
-        removeDefaultNamespace(ns, child);
-    }
-}
-
-void xmlRemoveDefaultNamespace(xmlNode *node) {
-    if (node->ns && node->ns->prefix) {
-        // not a default namespace
-        return;
-    }
-
-    removeDefaultNamespace(node->ns, node);
 }
